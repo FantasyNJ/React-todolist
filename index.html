@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <style></style>
+    <link rel="stylesheet" type="text/css" href="todolist/css/base.css">
+    <link rel="stylesheet" type="text/css" href="todolist/css/index.css">
+    <script src="src/react.js"></script>
+    <script src="src/react-dom.js"></script>
+    <script src="src/browser.min.js"></script>
+    <script src="js/comm.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+
+</head>
+
+<body>
+<section class="todoapp" id="todoList"></section>
+
+<script type="text/babel">
+
+    var Item = React.createClass({
+        render:function(){
+            return  <li className={this.props.isChecked?'completed':''}>
+                        <div className="view">
+                            <input className="toggle" type="checkbox" checked={this.props.isChecked} onChange={this.changeHandler} />
+                            <label>{this.props.title}</label>
+                            <button className="destroy" onClick={this.deleteHandler} ></button>
+                        </div>
+                        <input className="edit" defaultValue={this.props.title} />
+                    </li>;
+        },
+        changeHandler: function(){
+            this.props.app.clickItem(this.props.id);
+        },
+        deleteHandler:function(){
+            this.props.app.deleteItem(this.props.id);
+        }
+    });
+
+    var Todolist = React.createClass({
+        render:function(){
+            var num = 0;     //有多少个选中的
+            var data = this.props.data;
+            data.map(function(item, index){
+                if(item.isChecked){
+                    num++;
+                }
+            });
+            var main = '',footer = '';
+            if(data.length !== 0){
+                main = <section className="main">
+                            <input className="toggle-all" type="checkbox" checked={num === data.length?'checked':''} onChange={this.changeHandler} />
+                            <ul className="todo-list">
+                                {
+                                    data.map(function(item,index){
+                                        return <Item key={index} {...item} app={app}/>
+                                    })
+                                }
+                            </ul>
+                        </section>;
+                footer = <footer className="footer">
+                            <span className="todo-count">
+                                <strong>{data.length-num}</strong>
+                                <span>条未选中</span>
+                            </span>
+                        </footer>;
+            }
+            return (<div>
+                        <header className="header" >
+                            <h1>todos</h1>
+                            <input
+                                className="new-todo"
+                                placeholder="请输入内容"
+                                onKeyDown={this.downHandler}
+                            />
+                        </header>
+                        {main}
+                        {footer}
+                    </div>);
+        },
+        downHandler:function(ev){
+            if(ev.keyCode === 13 && ev.target.value.trim() !== ''){
+                this.props.app.addItem(ev.target.value);
+                ev.target.value = '';
+            }
+        },
+        changeHandler:function(ev){
+            this.props.app.allItem(ev.target.checked);
+        }
+    });
+
+    function render(){
+        ReactDOM.render(
+                <Todolist data={data} app={app}/>,
+                document.getElementById('todoList')
+        );
+    }
+    app.render = render;
+
+    render();
+
+</script>
+
+</body>
+</html>
